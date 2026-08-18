@@ -191,6 +191,14 @@ border:0.5px solid var(--glass-border);border-radius:18px;padding:16px;box-shado
 <div class="page" id="pg-nutri"></div>
 <!-- PRO MEMBERSHIP -->
 <div class="page" id="pg-pro"></div>
+<!-- LANGUAGE -->
+<div class="page" id="pg-language"></div>
+<!-- PERMISSIONS -->
+<div class="page" id="pg-perms"></div>
+<!-- DATA CENTER -->
+<div class="page" id="pg-data"></div>
+<!-- AI RECOGNITION -->
+<div class="page" id="pg-airec"></div>
 
 <!-- Global sheets -->
 <div id="nlpSheet" style="display:none;"></div>
@@ -287,9 +295,13 @@ function ds(d){return(d.getMonth()+1)+'/'+d.getDate();}
 function def(){
 var t=new Date(),ts=fd(t);var y=new Date(t);y.setDate(y.getDate()-1);var ys=fd(y);
 var d2=new Date(t);d2.setDate(d2.getDate()-2);var d2s=fd(d2);
-return{theme:'light',nick:'小美',h:165,tk:1550,tp:60,tf:50,tc:200,act:'sed',onboarded:true,
+return{theme:'light',lang:'zh-CN',nick:'小美',h:165,tk:1550,tp:60,tf:50,tc:200,act:'sed',onboarded:true,
 // Notification settings
 notif:{breakfast:'08:00',lunch:'12:00',dinner:'18:30',water:'2h',weight:'weekly',enabled:false},
+// Permissions
+perms:{camera:'granted',photo:'granted',notif:'denied',storage:'granted',health:'denied',location:'notDetermined'},
+// AI recognition history
+aiRecs:[],
 // Pro membership
 pro:false,
 recs:[
@@ -309,7 +321,96 @@ function load(){try{var d=JSON.parse(localStorage.getItem(SK));return d||def();}
 function save(){localStorage.setItem(SK,JSON.stringify(D));}
 var D=load();
 if(!D.theme)D.theme='light';
+if(!D.lang)D.lang='zh-CN';
+if(!D.perms)D.perms={camera:'granted',photo:'granted',notif:'denied',storage:'granted',health:'denied',location:'notDetermined'};
+if(!D.aiRecs)D.aiRecs=[];
 document.documentElement.setAttribute('data-theme',D.theme);
+
+// ===== i18n 多语言系统 =====
+var I18N={
+'zh-CN':{
+home:'首页',live:'实况',water:'喝水',profile:'我的',camera:'拍照',
+stats:'统计数据',nutri:'营养详情',stickers:'贴纸收集',ach:'我的成就',plog:'今日Plog',
+ai:'AI营养助手',notif:'提醒设置',about:'关于APP',share:'导出与分享',
+settings:'设置',general:'通用',language:'语言',darkMode:'深色模式',dailyTarget:'每日目标设置',
+privacy:'隐私设置',dataCenter:'我的数据',exportData:'导出我的数据',deleteData:'删除全部数据',
+clearData:'清除数据',permissions:'权限管理',pro:'吃一点 Pro',
+editProfile:'编辑个人资料',height:'身高',targetWater:'目标水量',drunk:'已喝',remaining:'还差',
+quickAdd:'快速添加',breakfast:'早餐',lunch:'午餐',dinner:'晚餐',snack:'加餐',
+photo:'拍照',album:'从相册选择',livePhoto:'Live Photo',video:'视频',
+switchCam:'前后摄像头',flash:'闪光灯',composition:'构图辅助',
+aiAnimate:'AI识别动画',manualEdit:'识别结果可手动修改',addFood:'手动添加食物',
+multiFood:'一张照片识别多种食物',aiConfirm:'AI识别确认',aiRecognizing:'AI识别中...',
+aiResult:'识别结果',confirm:'确认记录',recompute:'重新计算',total:'总计',
+protein:'蛋白质',fat:'脂肪',carbs:'碳水',calories:'热量',fiber:'纤维',sugar:'糖',sodium:'钠',
+appLang:'App语言',simplified:'简体中文',traditional:'繁體中文',english:'English',
+permCamera:'相机权限',permCameraDesc:'拍照识别食物',permPhoto:'相册权限',permPhotoDesc:'从相册选择照片',
+permNotif:'通知权限',permNotifDesc:'饮食提醒通知',permStorage:'存储权限',permStorageDesc:'保存照片和数据',
+permHealth:'健康数据',permHealthDesc:'体重和饮水写入健康App',permLocation:'位置权限',permLocationDesc:'餐厅推荐',
+granted:'已允许',denied:'已拒绝',notDetermined:'未询问',restricted:'受限',
+exportJSON:'导出为 JSON',exportCSV:'导出为 CSV',dataOverview:'数据概览',
+mealRecords:'饮食记录',weightRecords:'体重记录',waterRecords:'饮水记录',photoCount:'照片数量',
+aiAnalysisCount:'AI分析记录',stickerCount:'贴纸收集',achievementCount:'成就解锁',
+deleteAllWarn:'这将永久删除所有数据，不可恢复',deleteAccount:'注销账号',
+theme:'外观',followSystem:'跟随系统',lightMode:'浅色',darkMode2:'深色',
+saved:'已保存',updated:'已更新',noData:'暂无数据',
+},
+'zh-TW':{
+home:'首頁',live:'實況',water:'喝水',profile:'我的',camera:'拍照',
+stats:'統計數據',nutri:'營養詳情',stickers:'貼紙收集',ach:'我的成就',plog:'今日Plog',
+ai:'AI營養助手',notif:'提醒設置',about:'關於APP',share:'匯出與分享',
+settings:'設置',general:'通用',language:'語言',darkMode:'深色模式',dailyTarget:'每日目標設置',
+privacy:'隱私設置',dataCenter:'我的數據',exportData:'匯出我的數據',deleteData:'刪除全部數據',
+clearData:'清除數據',permissions:'權限管理',pro:'吃一點 Pro',
+editProfile:'編輯個人資料',height:'身高',targetWater:'目標水量',drunk:'已喝',remaining:'還差',
+quickAdd:'快速添加',breakfast:'早餐',lunch:'午餐',dinner:'晚餐',snack:'加餐',
+photo:'拍照',album:'從相冊選擇',livePhoto:'Live Photo',video:'視頻',
+switchCam:'前後攝像頭',flash:'閃光燈',composition:'構圖輔助',
+aiAnimate:'AI識別動畫',manualEdit:'識別結果可手動修改',addFood:'手動添加食物',
+multiFood:'一張照片識別多種食物',aiConfirm:'AI識別確認',aiRecognizing:'AI識別中...',
+aiResult:'識別結果',confirm:'確認記錄',recompute:'重新計算',total:'總計',
+protein:'蛋白質',fat:'脂肪',carbs:'碳水',calories:'熱量',fiber:'纖維',sugar:'糖',sodium:'鈉',
+appLang:'App語言',simplified:'简体中文',traditional:'繁體中文',english:'English',
+permCamera:'相機權限',permCameraDesc:'拍照識別食物',permPhoto:'相冊權限',permPhotoDesc:'從相冊選擇照片',
+permNotif:'通知權限',permNotifDesc:'飲食提醒通知',permStorage:'存儲權限',permStorageDesc:'保存照片和數據',
+permHealth:'健康數據',permHealthDesc:'體重和飲水寫入健康App',permLocation:'位置權限',permLocationDesc:'餐廳推薦',
+granted:'已允許',denied:'已拒絕',notDetermined:'未詢問',restricted:'受限',
+exportJSON:'匯出為 JSON',exportCSV:'匯出為 CSV',dataOverview:'數據概覽',
+mealRecords:'飲食記錄',weightRecords:'體重記錄',waterRecords:'飲水記錄',photoCount:'照片數量',
+aiAnalysisCount:'AI分析記錄',stickerCount:'貼紙收集',achievementCount:'成就解鎖',
+deleteAllWarn:'這將永久刪除所有數據，不可恢復',deleteAccount:'註銷帳號',
+theme:'外觀',followSystem:'跟隨系統',lightMode:'淺色',darkMode2:'深色',
+saved:'已保存',updated:'已更新',noData:'暫無數據',
+},
+'en':{
+home:'Home',live:'Live',water:'Water',profile:'Profile',camera:'Camera',
+stats:'Statistics',nutri:'Nutrition',stickers:'Stickers',ach:'Achievements',plog:'Daily Plog',
+ai:'AI Assistant',notif:'Reminders',about:'About',share:'Export & Share',
+settings:'Settings',general:'General',language:'Language',darkMode:'Dark Mode',dailyTarget:'Daily Goals',
+privacy:'Privacy',dataCenter:'My Data',exportData:'Export My Data',deleteData:'Delete All Data',
+clearData:'Clear Data',permissions:'Permissions',pro:'Eat A Bit Pro',
+editProfile:'Edit Profile',height:'Height',targetWater:'Water Goal',drunk:'Drunk',remaining:'Remaining',
+quickAdd:'Quick Add',breakfast:'Breakfast',lunch:'Lunch',dinner:'Dinner',snack:'Snack',
+photo:'Take Photo',album:'Choose from Album',livePhoto:'Live Photo',video:'Video',
+switchCam:'Switch Camera',flash:'Flash',composition:'Composition Guide',
+aiAnimate:'AI Recognition Animation',manualEdit:'Results Editable',addFood:'Add Food Manually',
+multiFood:'Multi-food Recognition',aiConfirm:'AI Confirmation',aiRecognizing:'AI Recognizing...',
+aiResult:'Results',confirm:'Confirm',recompute:'Recompute',total:'Total',
+protein:'Protein',fat:'Fat',carbs:'Carbs',calories:'Calories',fiber:'Fiber',sugar:'Sugar',sodium:'Sodium',
+appLang:'App Language',simplified:'简体中文',traditional:'繁體中文',english:'English',
+permCamera:'Camera',permCameraDesc:'Photo recognition',permPhoto:'Photo Library',permPhotoDesc:'Select from album',
+permNotif:'Notifications',permNotifDesc:'Meal reminders',permStorage:'Storage',permStorageDesc:'Save photos and data',
+permHealth:'Health Data',permHealthDesc:'Write weight & water to Health',permLocation:'Location',permLocationDesc:'Restaurant suggestions',
+granted:'Granted',denied:'Denied',notDetermined:'Not Asked',restricted:'Restricted',
+exportJSON:'Export as JSON',exportCSV:'Export as CSV',dataOverview:'Data Overview',
+mealRecords:'Meal Records',weightRecords:'Weight Records',waterRecords:'Water Records',photoCount:'Photos',
+aiAnalysisCount:'AI Analysis',stickerCount:'Stickers',achievementCount:'Achievements',
+deleteAllWarn:'This will permanently delete all data. Cannot be undone.',deleteAccount:'Delete Account',
+theme:'Appearance',followSystem:'Follow System',lightMode:'Light',darkMode2:'Dark',
+saved:'Saved',updated:'Updated',noData:'No data yet',
+}
+};
+function t(k){var lang=D.lang||'zh-CN';return(I18N[lang]&&I18N[lang][k])||(I18N['zh-CN'][k])||k;}
 
 // SVG icons
 var IC={
@@ -323,9 +424,9 @@ cam:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 4l-1.5 2H5c-1.1 0-
 var cur='home';
 function renderTab(){
 document.getElementById('tabbar').innerHTML=
-'<div class="tab'+(cur==='home'?' active':'')+'" onclick="sw(\'home\')">'+IC.bowl+'<span>首页</span></div>'+
-'<div class="tab'+(cur==='plog'?' active':'')+'" onclick="sw(\'plog\')">'+IC.live+'<span>实况</span></div>'+
-'<div class="tab'+(cur==='water'?' active':'')+'" onclick="sw(\'water\')">'+IC.water+'<span>喝水</span></div>';
+'<div class="tab'+(cur==='home'?' active':'')+'" onclick="sw(\'home\')">'+IC.bowl+'<span>'+t('home')+'</span></div>'+
+'<div class="tab'+(cur==='plog'?' active':'')+'" onclick="sw(\'plog\')">'+IC.live+'<span>'+t('live')+'</span></div>'+
+'<div class="tab'+(cur==='water'?' active':'')+'" onclick="sw(\'water\')">'+IC.water+'<span>'+t('water')+'</span></div>';
 var cc=document.getElementById('camCapsule');
 if(cc){
 cc.className='cam-capsule'+(cur==='record'?' active':'');
@@ -358,6 +459,10 @@ if(name==='search')renderSearch();
 if(name==='notif')renderNotif();
 if(name==='nutri')renderNutri();
 if(name==='pro')renderPro();
+if(name==='language')renderLanguage();
+if(name==='perms')renderPerms();
+if(name==='data')renderData();
+if(name==='airec')renderAIRec();
 np.scrollTop=0;
 }
 
@@ -1954,23 +2059,322 @@ ctx.stroke();
 ws.forEach(function(w,i){var x=i*st;var y=100-((w.v-mn)/rg)*100;ctx.fillStyle='#E8913A';ctx.beginPath();ctx.arc(x,y,3,0,Math.PI*2);ctx.fill();});
 }
 
+// ===== LANGUAGE =====
+function renderLanguage(){
+document.getElementById('pg-language').innerHTML=
+'<div style="display:flex;align-items:center;gap:10px;padding:16px 20px 8px;"><span onclick="sw(\'profile\')" style="font-size:22px;color:var(--text-sub);cursor:pointer;width:32px;">‹</span><span style="font-size:18px;font-weight:700;">'+t('appLang')+'</span></div>'+
+'<div style="padding:8px 16px;">'+
+'<div style="font-size:13px;color:var(--text-sub);margin-bottom:12px;padding:0 4px;">'+(D.lang==='en'?'Choose your preferred language. Changes take effect immediately.':'选择你偏好的语言，修改后立即生效。')+'</div>'+
+'<div style="background:var(--bg);border-radius:16px;overflow:hidden;box-shadow:var(--shadow);">'+
+[['zh-CN','🇨🇳',t('simplified')],['zh-TW','🇹🇼',t('traditional')],['en','🇬🇧',t('english')]].map(function(l){
+var sel=D.lang===l[0];
+return '<div onclick="setLang(\''+l[0]+'\')" style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:0.5px solid var(--border);cursor:pointer;">'+
+'<div style="display:flex;align-items:center;gap:12px;"><span style="font-size:24px;">'+l[1]+'</span><span style="font-size:15px;font-weight:'+(sel?'600':'400')+';">'+l[2]+'</span></div>'+
+(sel?'<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="var(--brand)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="5 12 10 17 19 8"/></svg>':'<span style="color:var(--text-faint);">›</span>')+
+'</div>';
+}).join('')+'</div>'+
+'</div>';
+}
+function setLang(lang){
+D.lang=lang;save();
+renderLanguage();renderProfile();renderTab();
+toast(t('updated'));
+}
+
+// ===== PERMISSIONS =====
+function renderPerms(){
+var perms=[
+['camera',t('permCamera'),t('permCameraDesc'),'📷'],
+['photo',t('permPhoto'),t('permPhotoDesc'),'🖼️'],
+['notif',t('permNotif'),t('permNotifDesc'),'🔔'],
+['storage',t('permStorage'),t('permStorageDesc'),'📦'],
+['health',t('permHealth'),t('permHealthDesc'),'🔒'],
+['location',t('permLocation'),t('permLocationDesc'),'📍'],
+];
+document.getElementById('pg-perms').innerHTML=
+'<div style="display:flex;align-items:center;gap:10px;padding:16px 20px 8px;"><span onclick="sw(\'profile\')" style="font-size:22px;color:var(--text-sub);cursor:pointer;width:32px;">‹</span><span style="font-size:18px;font-weight:700;">'+t('permissions')+'</span></div>'+
+'<div style="padding:8px 16px;">'+
+'<div style="font-size:13px;color:var(--text-sub);margin-bottom:12px;padding:0 4px;">'+(D.lang==='en'?'Manage app permissions for features and data access.':'管理应用对各功能和数据的访问权限。')+'</div>'+
+'<div style="background:var(--bg);border-radius:16px;overflow:hidden;box-shadow:var(--shadow);">'+
+perms.map(function(p){
+var st=D.perms[p[0]]||'notDetermined';
+var stColor=st==='granted'?'var(--brand)':(st==='denied'?'#C85050':'var(--text-faint)');
+var stText=t(st);
+return '<div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:0.5px solid var(--border);">'+
+'<div style="display:flex;align-items:center;gap:12px;"><span style="font-size:22px;">'+p[3]+'</span><div><div style="font-size:14px;font-weight:500;">'+p[1]+'</div><div style="font-size:11px;color:var(--text-sub);">'+p[2]+'</div></div></div>'+
+'<div style="display:flex;align-items:center;gap:8px;">'+
+'<span style="font-size:12px;font-weight:600;color:'+stColor+';">'+stText+'</span>'+
+'<div onclick="togglePerm(\''+p[0]+'\')" style="width:44px;height:26px;border-radius:13px;background:'+(st==='granted'?'var(--brand)':'var(--border)')+';position:relative;cursor:pointer;transition:background .3s;">'+
+'<div style="position:absolute;top:3px;left:'+(st==='granted'?'21px':'3px')+';width:20px;height:20px;border-radius:50%;background:#fff;transition:transform .3s;box-shadow:0 1px 3px rgba(0,0,0,.2);"></div></div></div></div>';
+}).join('')+'</div>'+
+'<div style="padding:16px 4px;font-size:12px;color:var(--text-faint);line-height:1.6;">'+
+(D.lang==='en'?'Permissions are simulated in this demo. On a real device, these would open system Settings.':'本 Demo 中的权限为模拟。在真实设备上，这些操作会跳转到系统设置。')+
+'</div></div>';
+}
+function togglePerm(key){
+D.perms[key]=D.perms[key]==='granted'?'denied':'granted';
+save();renderPerms();
+toast(D.perms[key]==='granted'?t('granted'):t('denied'));
+}
+
+// ===== DATA CENTER =====
+function renderData(){
+var mealCount=D.recs?D.recs.length:0;
+var weightCount=D.wt?D.wt.length:0;
+var waterDays=Object.keys(D.water||{});
+var stickerCount=D.stickers?D.stickers.length:0;
+var achCount=D.achs?D.achs.length:0;
+var aiCount=D.aiRecs?D.aiRecs.length:0;
+var photoCount=mealCount; // simplified
+var dataItems=[
+[t('mealRecords'),mealCount,'🍽️','#FF6B6B'],
+[t('weightRecords'),weightCount,'⚖️','#4ECDC4'],
+[t('waterRecords'),waterDays.length,'💧','#45B7D1'],
+[t('photoCount'),photoCount,'📷','#FFD93D'],
+[t('aiAnalysisCount'),aiCount,'🤖','#95E1D3'],
+[t('stickerCount'),stickerCount,'🏷️','#C7B46E'],
+[t('achievementCount'),achCount,'🏆','#F8B500'],
+];
+document.getElementById('pg-data').innerHTML=
+'<div style="display:flex;align-items:center;gap:10px;padding:16px 20px 8px;"><span onclick="sw(\'profile\')" style="font-size:22px;color:var(--text-sub);cursor:pointer;width:32px;">‹</span><span style="font-size:18px;font-weight:700;">'+t('dataCenter')+'</span></div>'+
+'<div style="padding:8px 16px;">'+
+// 数据概览卡片
+'<div style="background:var(--bg);border-radius:16px;padding:20px;box-shadow:var(--shadow);margin-bottom:16px;">'+
+'<div style="font-size:15px;font-weight:700;margin-bottom:14px;">'+t('dataOverview')+'</div>'+
+'<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;">'+
+dataItems.map(function(d){
+return '<div style="text-align:center;padding:12px 4px;border-radius:12px;background:rgba(255,255,255,0.4);">'+
+'<div style="font-size:24px;margin-bottom:4px;">'+d[2]+'</div>'+
+'<div style="font-size:22px;font-weight:700;color:'+d[3]+';">'+d[1]+'</div>'+
+'<div style="font-size:10px;color:var(--text-sub);margin-top:2px;">'+d[0]+'</div></div>';
+}).join('')+'</div></div>'+
+// 导出
+'<div style="background:var(--bg);border-radius:16px;overflow:hidden;box-shadow:var(--shadow);margin-bottom:16px;">'+
+'<div style="padding:14px 16px;border-bottom:0.5px solid var(--border);font-size:14px;font-weight:600;">'+t('exportData')+'</div>'+
+'<div onclick="exportData(\'json\')" style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:0.5px solid var(--border);cursor:pointer;">'+
+'<span style="font-size:15px;"><span style="font-size:18px;margin-right:8px;">📄</span>'+t('exportJSON')+'</span><span style="color:var(--text-faint);">›</span></div>'+
+'<div onclick="exportData(\'csv\')" style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;cursor:pointer;">'+
+'<span style="font-size:15px;"><span style="font-size:18px;margin-right:8px;">📊</span>'+t('exportCSV')+'</span><span style="color:var(--text-faint);">›</span></div></div>'+
+// 删除
+'<div style="background:rgba(200,80,80,0.06);border:1px dashed rgba(200,80,80,0.2);border-radius:16px;padding:16px;margin-bottom:16px;">'+
+'<div style="font-size:14px;font-weight:600;color:#C85050;margin-bottom:4px;">'+t('deleteData')+'</div>'+
+'<div style="font-size:12px;color:var(--text-sub);margin-bottom:10px;">'+t('deleteAllWarn')+'</div>'+
+'<button onclick="clearData()" style="padding:10px 20px;border-radius:12px;background:#C85050;color:#fff;border:none;font-size:14px;font-weight:600;cursor:pointer;">'+t('deleteData')+'</button></div>'+
+'</div>';
+}
+function exportData(fmt){
+var data={
+app:'Eat A Bit',version:'1.0.0',exportDate:new Date().toISOString(),
+profile:{nick:D.nick,height:D.h,targetCalories:D.tk,targetProtein:D.tp,targetFat:D.tf,targetCarbs:D.tc},
+mealRecords:D.recs||[],weightRecords:D.wt||[],waterRecords:D.water||{},
+stickers:D.stickers||[],achievements:D.achs||[],aiRecords:D.aiRecs||[],
+};
+var content,Blob,filename;
+if(fmt==='json'){
+content=JSON.stringify(data,null,2);
+filename='eatabit_data_'+fd(new Date())+'.json';
+}else{
+// CSV
+var rows=[['Type','Date','Time','Value','Detail']];
+(D.recs||[]).forEach(function(r){rows.push(['Meal',r.d,r.t,(FOODS[r.fi]||{}).k+'kcal',(FOODS[r.fi]||{}).n+' '+r.r+'%']);});
+(D.wt||[]).forEach(function(w){rows.push(['Weight',w.d,'',w.v+'kg','']);});
+Object.keys(D.water||{}).forEach(function(d){rows.push(['Water',d,'',(D.water[d]||0)+'ml','']);});
+content=rows.map(function(r){return r.map(function(c){return '"'+String(c).replace(/"/g,'""')+'"';}).join(',');}).join('\n');
+filename='eatabit_data_'+fd(new Date())+'.csv';
+}
+var blob=new Blob([content],{type:fmt==='json'?'application/json':'text/csv'});
+var url=URL.createObjectURL(blob);
+var a=document.createElement('a');a.href=url;a.download=filename;a.click();
+URL.revokeObjectURL(url);
+toast(t('saved'));
+}
+
+// ===== AI RECOGNITION WORKFLOW =====
+function renderAIRec(){
+document.getElementById('pg-airec').innerHTML=
+'<div style="display:flex;align-items:center;gap:10px;padding:16px 20px 8px;"><span onclick="sw(\'home\')" style="font-size:22px;color:var(--text-sub);cursor:pointer;width:32px;">‹</span><span style="font-size:18px;font-weight:700;">AI'+t('aiResult')+'</span></div>'+
+'<div style="padding:8px 16px;">'+
+// AI识别历史
+'<div style="background:var(--bg);border-radius:16px;overflow:hidden;box-shadow:var(--shadow);margin-bottom:16px;">'+
+'<div style="padding:14px 16px;border-bottom:0.5px solid var(--border);font-size:14px;font-weight:600;">'+(D.lang==='en'?'Recent Recognitions':'最近识别记录')+'</div>'+
+((D.aiRecs||[]).length===0?
+'<div style="padding:30px 16px;text-align:center;color:var(--text-faint);font-size:13px;">'+t('noData')+'</div>':
+(D.aiRecs||[]).slice(-10).reverse().map(function(r){
+return '<div style="padding:12px 16px;border-bottom:0.5px solid var(--border);">'+
+'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">'+
+'<span style="font-size:13px;font-weight:600;">'+r.date+' '+r.time+'</span>'+
+'<span style="font-size:12px;color:var(--brand);font-weight:600;">'+r.totalKcal+' kcal</span></div>'+
+'<div style="display:flex;flex-wrap:wrap;gap:6px;">'+
+r.items.map(function(it){return '<span style="font-size:11px;padding:3px 8px;border-radius:8px;background:rgba(122,158,110,0.1);">'+it.emoji+' '+it.name+' '+it.weight+'g</span>';}).join('')+
+'</div></div>';
+}).join('')
+))+
+'</div>'+
+// 开始AI识别按钮
+'<button onclick="startAIRecognition()" style="width:100%;padding:14px;border-radius:14px;background:linear-gradient(135deg,#7A9E6E,#5A7A4E);color:#fff;border:none;font-size:16px;font-weight:600;cursor:pointer;box-shadow:0 4px 16px rgba(122,158,110,0.3);">'+
+'🤖 '+(D.lang==='en'?'Start AI Recognition':'开始AI识别')+'</button>'+
+'</div>';
+}
+function startAIRecognition(){
+var mid=genModalId();
+// 模拟AI识别的食物组合
+var samplePicks=[
+[{n:'米饭',e:'🍚',w:150,fi:8},{n:'红烧肉',e:'🍖',w:80,fi:38},{n:'青菜',e:'🥬',w:100,fi:46}],
+[{n:'三明治',e:'🥪',w:180,fi:44},{n:'拿铁',e:'☕',w:300,fi:28}],
+[{n:'鸡胸肉',e:'🍗',w:120,fi:3},{n:'糙米饭',e:'🍚',w:150,fi:8},{n:'牛油果',e:'🥑',w:100,fi:6}],
+[{n:'寿司卷',e:'🍱',w:180,fi:12},{n:'味噌汤',e:'🍲',w:250,fi:13}],
+];
+var pick=samplePicks[Math.floor(Math.random()*samplePicks.length)];
+// 计算初始营养
+var totalK=0,totalP=0,totalF=0,totalC=0;
+pick.forEach(function(it){
+var f=FOODS[it.fi]||{k:200,p:10,f:5,c:30};
+var ratio=it.w/parseFloat((f.w||'100g').replace(/[^0-9.]/g,''));
+it.kcal=Math.round(f.k*ratio);it.p=Math.round(f.p*ratio*10)/10;it.f=Math.round(f.f*ratio*10)/10;it.c=Math.round(f.c*ratio*10)/10;
+totalK+=it.kcal;totalP+=it.p;totalF+=it.f;totalC+=it.c;
+});
+var html=
+'<h3 style="font-size:18px;margin-bottom:4px;">'+t('aiResult')+'</h3>'+
+'<div style="font-size:12px;color:var(--text-sub);margin-bottom:12px;">'+t('aiRecognizing')+' ✅</div>'+
+// 食物列表（可编辑克数）
+'<div id="aiItems" style="margin-bottom:12px;">'+
+pick.map(function(it,idx){
+return '<div style="display:flex;align-items:center;gap:8px;padding:10px;border-radius:12px;background:rgba(255,255,255,0.4);margin-bottom:6px;">'+
+'<span style="font-size:24px;">'+it.e+'</span>'+
+'<div style="flex:1;"><div style="font-size:13px;font-weight:600;">'+it.n+'</div><div style="font-size:11px;color:var(--text-sub);">'+it.kcal+'kcal · P'+it.p+'g · F'+it.f+'g · C'+it.c+'g</div></div>'+
+'<div style="display:flex;align-items:center;gap:4px;">'+
+'<input type="number" value="'+it.w+'" min="10" max="500" step="10" style="width:56px;padding:6px 8px;border-radius:8px;border:1px solid var(--border);font-size:13px;text-align:center;background:var(--bg);" onchange="recalcAI('+idx+',this.value)"/>'+
+'<span style="font-size:11px;color:var(--text-sub);">g</span></div></div>';
+}).join('')+
+'</div>'+
+// 总计
+'<div style="padding:12px;border-radius:12px;background:rgba(122,158,110,0.08);margin-bottom:12px;">'+
+'<div style="display:flex;justify-content:space-between;margin-bottom:4px;"><span style="font-size:13px;color:var(--text-sub);">'+t('calories')+'</span><span style="font-size:18px;font-weight:700;color:var(--brand);" id="aiTotalK">'+Math.round(totalK)+' kcal</span></div>'+
+'<div style="display:flex;gap:12px;font-size:12px;color:var(--text-sub);">'+
+'<span>'+t('protein')+' <b id="aiTotalP">'+totalP.toFixed(1)+'</b>g</span>'+
+'<span>'+t('fat')+' <b id="aiTotalF">'+totalF.toFixed(1)+'</b>g</span>'+
+'<span>'+t('carbs')+' <b id="aiTotalC">'+totalC.toFixed(1)+'</b>g</span></div></div>'+
+'<div style="display:flex;gap:10px;">'+
+'<button class="btn btn-s" onclick="closeModal(\''+mid+'\')">'+(D.lang==='en'?'Cancel':'取消')+'</button>'+
+'<button class="btn btn-p" onclick="confirmAIRec(\''+mid+'\')">'+t('confirm')+'</button></div>';
+var m=modal(html,mid);
+window._aiPick=pick;
+window._aiModalId=mid;
+}
+function recalcAI(idx,weight){
+var pick=window._aiPick;
+if(!pick||!pick[idx])return;
+var it=pick[idx];
+it.w=parseInt(weight)||100;
+var f=FOODS[it.fi]||{k:200,p:10,f:5,c:30};
+var baseW=parseFloat((f.w||'100g').replace(/[^0-9.]/g,''));
+var ratio=it.w/baseW;
+it.kcal=Math.round(f.k*ratio);it.p=Math.round(f.p*ratio*10)/10;it.f=Math.round(f.f*ratio*10)/10;it.c=Math.round(f.c*ratio*10)/10;
+// 更新该行
+var rows=document.getElementById('aiItems').children;
+if(rows[idx]){var sub=rows[idx].querySelector('.flex-1')||rows[idx].children[1];if(sub)sub.querySelector('div:last-child').innerHTML=it.kcal+'kcal · P'+it.p+'g · F'+it.f+'g · C'+it.c+'g';}
+// 重算总计
+var tK=0,tP=0,tF=0,tC=0;
+pick.forEach(function(i){tK+=i.kcal;tP+=i.p;tF+=i.f;tC+=i.c;});
+var ek=document.getElementById('aiTotalK');if(ek)ek.textContent=Math.round(tK)+' kcal';
+var ep=document.getElementById('aiTotalP');if(ep)ep.textContent=tP.toFixed(1);
+var ef=document.getElementById('aiTotalF');if(ef)ef.textContent=tF.toFixed(1);
+var ec=document.getElementById('aiTotalC');if(ec)ec.textContent=tC.toFixed(1);
+}
+function confirmAIRec(mid){
+var pick=window._aiPick;
+if(!pick)return;
+// 记录到AI历史
+var now=new Date();
+var rec={date:fd(now),time:String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0'),items:pick.map(function(it){return{name:it.n,emoji:it.e,weight:it.w,kcal:it.kcal};}),totalKcal:Math.round(pick.reduce(function(s,it){return s+it.kcal;},0))};
+D.aiRecs=D.aiRecs||[];D.aiRecs.push(rec);
+// 添加到饮食记录
+var ts=fd(now);
+pick.forEach(function(it){
+D.recs.push({d:ts,t:rec.time,fi:it.fi,k:it.kcal,r:100,ak:it.kcal,mt:now.getHours()<10?'breakfast':(now.getHours()<14?'lunch':'dinner')});
+});
+save();
+closeModal(mid);
+toast(t('saved'));
+renderHome();renderAIRec();
+}
+
 // ===== PROFILE =====
 function renderProfile(){
 var w=D.wt[D.wt.length-1];var bmi=w?(w.v/(D.h/100*D.h/100)).toFixed(1):'--';
 document.getElementById('pg-profile').innerHTML=
 '<div style="display:flex;align-items:center;gap:14px;padding:20px 16px;">'+
 '<div style="width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,var(--brand),var(--brand-dark));display:flex;align-items:center;justify-content:center;font-size:28px;border:2px solid rgba(255,255,255,0.5);box-shadow:0 2px 12px rgba(122,158,110,0.25);"><svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="#fff" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-7 8-7s8 3 8 7"/></svg></div>'+
-'<div><div style="font-size:20px;font-weight:700;">'+D.nick+'</div><div style="font-size:13px;color:var(--text-sub);margin-top:2px;">身高 '+D.h+'cm · BMI '+bmi+'</div></div></div>'+
-'<div style="margin:0 16px;background:rgba(255,255,255,0.55);backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);border:0.5px solid rgba(255,255,255,0.5);border-radius:18px;box-shadow:var(--shadow);overflow:hidden;">'+
-[['📊','统计数据','stats'],['🥗','营养详情','nutri'],['🏷️','我的贴纸收集','stickers'],['🏆','我的成就','ach'],['✨','今日Plog','plog'],['🤖','AI营养助手','ai'],['🔔','提醒设置','notif'],['👑','吃一点 Pro','__pro'],['📤','导出与分享','share'],['🌙','深色模式','__dark'],['🎯','每日目标设置','__target'],['🔒','隐私设置','__privacy'],['ℹ️','关于APP','about'],['🗑️','清除数据','__clear']].map(function(m){
-if(m[2]==='__dark')return '<div onclick="toggleDark()" style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:0.5px solid var(--border);cursor:pointer;font-size:15px;"><span><span style="font-size:20px;margin-right:8px;">'+m[0]+'</span>'+m[1]+'</span><div style="width:44px;height:26px;border-radius:13px;background:'+(D.theme==='dark'?'var(--brand)':'var(--border)')+';position:relative;cursor:pointer;transition:background .3s;"><div style="position:absolute;top:3px;left:'+(D.theme==='dark'?'21px':'3px')+';width:20px;height:20px;border-radius:50%;background:#fff;transition:transform .3s;box-shadow:0 1px 3px rgba(0,0,0,.2);"></div></div></div>';
-if(m[2]==='__target')return '<div onclick="setTarget()" style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:0.5px solid var(--border);cursor:pointer;font-size:15px;"><span><span style="font-size:20px;margin-right:8px;">'+m[0]+'</span>'+m[1]+'</span><span style="color:var(--text-faint);">›</span></div>';
-if(m[2]==='__privacy')return '<div onclick="showPrivacy()" style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:0.5px solid var(--border);cursor:pointer;font-size:15px;"><span><span style="font-size:20px;margin-right:8px;">'+m[0]+'</span>'+m[1]+'</span><span style="color:var(--text-faint);">›</span></div>';
-if(m[2]==='__pro')return '<div onclick="sw(\'pro\')" style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:0.5px solid var(--border);cursor:pointer;font-size:15px;"><span><span style="font-size:20px;margin-right:8px;">'+m[0]+'</span>'+m[1]+(D.pro?' <span class="pro-badge">PRO</span>':' <span style="font-size:11px;color:var(--accent);font-weight:600;">¥28/月</span>')+'</span><span style="color:var(--text-faint);">›</span></div>';
-if(m[2]==='__clear')return '<div onclick="clearData()" style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;cursor:pointer;font-size:15px;"><span><span style="font-size:20px;margin-right:8px;">'+m[0]+'</span>'+m[1]+'</span><span style="color:var(--text-faint);">›</span></div>';
+'<div><div style="font-size:20px;font-weight:700;">'+D.nick+'</div><div style="font-size:13px;color:var(--text-sub);margin-top:2px;">'+t('height')+' '+D.h+'cm · BMI '+bmi+'</div></div>'+
+'<div onclick="editProfileInfo()" style="margin-left:auto;padding:6px 14px;border-radius:12px;background:rgba(122,158,110,0.1);font-size:13px;font-weight:600;color:var(--brand);cursor:pointer;">'+t('editProfile')+'</div></div>'+
+
+// === 通用设置 ===
+'<div style="margin:0 16px 16px;">'+
+'<div style="font-size:13px;font-weight:600;color:var(--text-sub);padding:0 4px 8px;">'+t('general')+'</div>'+
+'<div style="background:rgba(255,255,255,0.55);backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);border:0.5px solid rgba(255,255,255,0.5);border-radius:18px;box-shadow:var(--shadow);overflow:hidden;">'+
+// 语言
+'<div onclick="sw(\'language\')" style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:0.5px solid var(--border);cursor:pointer;font-size:15px;"><span><span style="font-size:20px;margin-right:8px;">🌐</span>'+t('language')+'</span><span style="font-size:13px;color:var(--text-faint);">'+({'zh-CN':t('simplified'),'zh-TW':t('traditional'),en:t('english')}[D.lang||'zh-CN'])+' ›</span></div>'+
+// 深色模式
+'<div onclick="toggleDark()" style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:0.5px solid var(--border);cursor:pointer;font-size:15px;"><span><span style="font-size:20px;margin-right:8px;">🌙</span>'+t('darkMode')+'</span><div style="width:44px;height:26px;border-radius:13px;background:'+(D.theme==='dark'?'var(--brand)':'var(--border)')+';position:relative;cursor:pointer;transition:background .3s;"><div style="position:absolute;top:3px;left:'+(D.theme==='dark'?'21px':'3px')+';width:20px;height:20px;border-radius:50%;background:#fff;transition:transform .3s;box-shadow:0 1px 3px rgba(0,0,0,.2);"></div></div></div>'+
+// 每日目标
+'<div onclick="setTarget()" style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:0.5px solid var(--border);cursor:pointer;font-size:15px;"><span><span style="font-size:20px;margin-right:8px;">🎯</span>'+t('dailyTarget')+'</span><span style="color:var(--text-faint);">›</span></div>'+
+// 通知设置
+'<div onclick="sw(\'notif\')" style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;cursor:pointer;font-size:15px;"><span><span style="font-size:20px;margin-right:8px;">🔔</span>'+t('notif')+'</span><span style="color:var(--text-faint);">›</span></div>'+
+'</div></div>'+
+
+// === 数据与隐私 ===
+'<div style="margin:0 16px 16px;">'+
+'<div style="font-size:13px;font-weight:600;color:var(--text-sub);padding:0 4px 8px;">'+(D.lang==='en'?'Data & Privacy':'数据与隐私')+'</div>'+
+'<div style="background:rgba(255,255,255,0.55);backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);border:0.5px solid rgba(255,255,255,0.5);border-radius:18px;box-shadow:var(--shadow);overflow:hidden;">'+
+// 我的数据
+'<div onclick="sw(\'data\')" style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:0.5px solid var(--border);cursor:pointer;font-size:15px;"><span><span style="font-size:20px;margin-right:8px;">📦</span>'+t('dataCenter')+'</span><span style="color:var(--text-faint);">›</span></div>'+
+// 权限管理
+'<div onclick="sw(\'perms\')" style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:0.5px solid var(--border);cursor:pointer;font-size:15px;"><span><span style="font-size:20px;margin-right:8px;">📷</span>'+t('permissions')+'</span><span style="color:var(--text-faint);">›</span></div>'+
+// 隐私设置
+'<div onclick="showPrivacy()" style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;cursor:pointer;font-size:15px;"><span><span style="font-size:20px;margin-right:8px;">🔒</span>'+t('privacy')+'</span><span style="color:var(--text-faint);">›</span></div>'+
+'</div></div>'+
+
+// === 功能 ===
+'<div style="margin:0 16px 16px;">'+
+'<div style="font-size:13px;font-weight:600;color:var(--text-sub);padding:0 4px 8px;">'+(D.lang==='en'?'Features':'功能')+'</div>'+
+'<div style="background:rgba(255,255,255,0.55);backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);border:0.5px solid rgba(255,255,255,0.5);border-radius:18px;box-shadow:var(--shadow);overflow:hidden;">'+
+[['📊',t('stats'),'stats'],['🥗',t('nutri'),'nutri'],['🏷️',t('stickers'),'stickers'],['🏆',t('ach'),'ach'],['✨',t('plog'),'plog'],['🤖',t('ai'),'ai'],['📤',t('share'),'share'],['ℹ️',t('about'),'about']].map(function(m){
 return '<div onclick="sw(\''+m[2]+'\')" style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:0.5px solid var(--border);cursor:pointer;font-size:15px;"><span><span style="font-size:20px;margin-right:8px;">'+m[0]+'</span>'+m[1]+'</span><span style="color:var(--text-faint);">›</span></div>';
-}).join('')+'</div>'+
-'<div style="text-align:center;padding:20px;font-size:12px;color:var(--text-faint);">吃一点 v1.0.0</div>';
+}).join('')+
+// Pro
+'<div onclick="sw(\'pro\')" style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;cursor:pointer;font-size:15px;"><span><span style="font-size:20px;margin-right:8px;">👑</span>'+t('pro')+(D.pro?' <span class="pro-badge">PRO</span>':' <span style="font-size:11px;color:var(--accent);font-weight:600;">¥28/月</span>')+'</span><span style="color:var(--text-faint);">›</span></div>'+
+'</div></div>'+
+
+// === 危险区 ===
+'<div style="margin:0 16px 16px;">'+
+'<div style="background:rgba(200,80,80,0.06);border:1px dashed rgba(200,80,80,0.2);border-radius:18px;overflow:hidden;">'+
+'<div onclick="clearData()" style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:0.5px solid rgba(200,80,80,0.1);cursor:pointer;font-size:15px;color:#C85050;"><span><span style="font-size:20px;margin-right:8px;">🗑️</span>'+t('clearData')+'</span><span style="color:#C85050;opacity:0.5;">›</span></div>'+
+'<div onclick="deleteAccount()" style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;cursor:pointer;font-size:15px;color:#C85050;"><span><span style="font-size:20px;margin-right:8px;">🚪</span>'+t('deleteAccount')+'</span><span style="color:#C85050;opacity:0.5;">›</span></div>'+
+'</div></div>'+
+
+'<div style="text-align:center;padding:20px;font-size:12px;color:var(--text-faint);">吃一点 v2.0.0</div>';
+}
+
+function editProfileInfo(){
+var mid=genModalId();
+modal('<h3 style="font-size:18px;margin-bottom:12px;">'+t('editProfile')+'</h3>'+
+'<p style="font-size:14px;color:var(--text-sub);margin-bottom:4px;">'+(D.lang==='en'?'Nickname':'昵称')+'</p>'+
+'<input type="text" id="editNick" value="'+D.nick+'" style="width:100%;padding:10px 16px;border-radius:12px;border:1.5px solid var(--border);font-size:16px;outline:none;background:var(--bg);color:var(--text);margin-bottom:8px;"/>'+
+'<p style="font-size:14px;color:var(--text-sub);margin-bottom:4px;">'+t('height')+'(cm)</p>'+
+'<input type="number" id="editH" value="'+D.h+'" style="width:100%;padding:10px 16px;border-radius:12px;border:1.5px solid var(--border);font-size:16px;outline:none;background:var(--bg);color:var(--text);margin-bottom:12px;"/>'+
+'<div><button class="btn btn-p" onclick="confirmProfileInfo(\''+mid+'\')">'+(D.lang==='en'?'Save':'保存')+'</button> <button class="btn btn-s" onclick="closeModal(\''+mid+'\')">'+(D.lang==='en'?'Cancel':'取消')+'</button></div>',mid);
+}
+function confirmProfileInfo(mid){
+D.nick=document.getElementById('editNick').value||D.nick;
+D.h=parseInt(document.getElementById('editH').value)||D.h;
+save();closeModal(mid);
+renderProfile();toast(t('saved'));
+}
+function deleteAccount(){
+var mid=genModalId();
+modal('<h3 style="font-size:18px;margin-bottom:12px;color:#C85050;">'+t('deleteAccount')+'</h3>'+
+'<p style="font-size:14px;color:var(--text-sub);margin-bottom:16px;">'+t('deleteAllWarn')+'</p>'+
+'<div><button class="btn btn-p" style="background:#C85050;" onclick="doClear();closeModal(\''+mid+'\')">'+(D.lang==='en'?'Confirm Delete':'确认注销')+'</button> <button class="btn btn-s" onclick="closeModal(\''+mid+'\')">'+(D.lang==='en'?'Cancel':'取消')+'</button></div>',mid);
 }
 
 function toggleDark(){
