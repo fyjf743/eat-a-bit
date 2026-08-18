@@ -1708,59 +1708,92 @@ tlWHtml+='<div style="display:flex;align-items:center;gap:10px;padding:6px 0;">'
 });
 }
 
-// 水量计算：头部作为容器，0-100% 映射到头部内部高度
+// 水量计算：头部作为容器，0-100% 映射到容器内部高度
 var headLiquidH=pct; // 0-100
+// SVG 容器尺寸
+var CW=160,CH=260; // 容器宽高
+var liquidBottom=250; // 液体底部Y坐标
+var liquidTopOffset=20; // 液体顶部距容器顶部偏移
+var liquidH=liquidBottom-liquidTopOffset; // 液体最大高度
+var waterY=liquidBottom-(pct/100)*liquidH; // 当前水面Y坐标
 
 document.getElementById('pg-water').innerHTML=
 // 容器卡片 - 浅米白色干净背景
 '<div style="margin:12px 16px;background:linear-gradient(180deg,#FAF8F5 0%,#F5F2EE 100%);border:0.5px solid rgba(200,195,190,0.3);border-radius:20px;padding:24px 20px;min-height:380px;position:relative;overflow:hidden;display:flex;flex-direction:column;align-items:center;">'+
 // 顶部目标水量
-'<div style="position:relative;z-index:2;text-align:center;margin-bottom:12px;"><div style="font-size:11px;color:rgba(150,145,140,0.8);font-weight:500;letter-spacing:1px;">目标水量</div><div style="font-size:20px;font-weight:700;color:#5A5A5A;margin-top:2px;">2,000<span style="font-size:13px;font-weight:500;color:rgba(150,145,140,0.7);">ml</span></div></div>'+
-// === 玻璃女孩娃娃头容器 v4 - 仅头部装水 ===
-'<div style="position:relative;z-index:2;display:flex;align-items:flex-start;gap:8px;width:100%;max-width:100%;flex-wrap:nowrap;justify-content:center;">'+
-'<div style="width:100%;max-width:160px;height:240px;position:relative;flex-shrink:1;min-width:0;">'+
-// --- 头发顶部弧形（刘海）---
-'<div style="position:absolute;top:0;left:50%;transform:translateX(-50%);width:120px;max-width:88%;height:48px;background:linear-gradient(180deg,rgba(190,210,228,0.5) 0%,rgba(170,195,215,0.35) 50%,rgba(150,180,205,0.2) 100%);border-radius:50% 50% 38% 38% / 62% 62% 42% 42%;z-index:2;"></div>'+
-// --- 头发左侧（齐肩）---
-'<div style="position:absolute;top:4px;left:0;width:32px;height:100px;background:linear-gradient(180deg,rgba(195,215,232,0.45) 0%,rgba(170,195,218,0.32) 55%,rgba(150,180,205,0.16) 100%);border-radius:20px 6px 12px 22px;z-index:1;"></div>'+
-// --- 头发右侧 ---
-'<div style="position:absolute;top:4px;right:0;width:32px;height:100px;background:linear-gradient(180deg,rgba(195,215,232,0.45) 0%,rgba(170,195,218,0.32) 55%,rgba(150,180,205,0.16) 100%);border-radius:6px 20px 22px 12px;z-index:1;"></div>'+
-// === 头部 - 装水玻璃容器（核心）===
-'<div style="position:absolute;top:2px;left:50%;transform:translateX(-50%);width:128px;height:150px;max-width:92%;border-radius:50% 50% 45% 45% / 52% 52% 48% 48%;background:linear-gradient(135deg,rgba(255,255,255,0.45) 0%,rgba(248,250,255,0.22) 35%,rgba(228,238,250,0.14) 65%,rgba(208,224,242,0.26) 100%);border:1px solid rgba(255,255,255,0.7);z-index:3;overflow:hidden;">'+
-// 头部内部液体（水装在头部，pct 0-100% 直接映射）
-'<div style="position:absolute;bottom:0;left:0;right:0;background:linear-gradient(180deg,rgba(120,185,225,0.55) 0%,rgba(85,155,210,0.68) 40%,rgba(55,125,190,0.78) 100%);transition:height .8s cubic-bezier(0.4,0,0.2,1);height:'+pct+'%;">'+
-// 水面波纹（细微波纹）
-'<svg style="position:absolute;top:-7px;left:0;right:0;height:14px;width:100%;" viewBox="0 0 128 14" preserveAspectRatio="none"><path d="M0,8 Q16,2 32,7 T64,5 T96,4 T128,5 L128,14 L0,14 Z" fill="rgba(255,255,255,0.5)"/><path d="M0,9 Q21,4 42,8 T84,6 T128,7 L128,14 L0,14 Z" fill="rgba(255,255,255,0.3)"/></svg>'+
-// 水中微小气泡
-'<div style="position:absolute;top:12px;left:18%;width:4px;height:4px;border-radius:50%;background:rgba(255,255,255,0.65);animation:bubbleUp 3s ease-in infinite;"></div>'+
-'<div style="position:absolute;top:32px;left:62%;width:3px;height:3px;border-radius:50%;background:rgba(255,255,255,0.55);animation:bubbleUp 4s ease-in infinite 0.5s;"></div>'+
-'<div style="position:absolute;top:52px;left:35%;width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,0.6);animation:bubbleUp 3.5s ease-in infinite 1s;"></div>'+
-'<div style="position:absolute;top:72px;left:72%;width:3px;height:3px;border-radius:50%;background:rgba(255,255,255,0.5);animation:bubbleUp 4.5s ease-in infinite 1.5s;"></div>'+
-'<div style="position:absolute;top:92px;left:25%;width:4px;height:4px;border-radius:50%;background:rgba(255,255,255,0.55);animation:bubbleUp 3.8s ease-in infinite 0.8s;"></div>'+
+'<div style="position:relative;z-index:2;text-align:center;margin-bottom:8px;"><div style="font-size:11px;color:rgba(150,145,140,0.8);font-weight:500;letter-spacing:1px;">目标水量</div><div style="font-size:20px;font-weight:700;color:#5A5A5A;margin-top:2px;">2,000<span style="font-size:13px;font-weight:500;color:rgba(150,145,140,0.7);">ml</span></div></div>'+
+// === 玻璃女孩娃娃头容器 v5 - 单一SVG整体 ===
+'<div style="position:relative;z-index:2;display:flex;align-items:flex-start;gap:6px;width:100%;max-width:100%;flex-wrap:nowrap;justify-content:center;">'+
+// SVG 容器 - 单一连续路径
+'<svg width="'+CW+'" height="'+CH+'" viewBox="0 0 '+CW+' '+CH+'" style="flex-shrink:0;overflow:visible;">'+
+// 定义渐变和裁剪路径
+'<defs>'+
+// 玻璃材质渐变
+'<linearGradient id="glassGrad" x1="0%" y1="0%" x2="100%" y2="100%">'+
+'<stop offset="0%" stop-color="rgba(255,255,255,0.5)"/>'+
+'<stop offset="35%" stop-color="rgba(248,250,255,0.25)"/>'+
+'<stop offset="65%" stop-color="rgba(228,238,250,0.15)"/>'+
+'<stop offset="100%" stop-color="rgba(208,224,242,0.3)"/>'+
+'</linearGradient>'+
+// 水的渐变
+'<linearGradient id="waterGrad" x1="0%" y1="0%" x2="0%" y2="100%">'+
+'<stop offset="0%" stop-color="rgba(120,185,225,0.6)"/>'+
+'<stop offset="40%" stop-color="rgba(85,155,210,0.7)"/>'+
+'<stop offset="100%" stop-color="rgba(55,125,190,0.8)"/>'+
+'</linearGradient>'+
+// 左侧高光渐变
+'<linearGradient id="highlightGrad" x1="0%" y1="0%" x2="0%" y2="100%">'+
+'<stop offset="0%" stop-color="rgba(255,255,255,0.65)"/>'+
+'<stop offset="60%" stop-color="rgba(255,255,255,0.25)"/>'+
+'<stop offset="100%" stop-color="rgba(255,255,255,0)"/>'+
+'</linearGradient>'+
+// 容器轮廓路径（单一连续形状 - 女孩娃娃头+头发）
+'<clipPath id="containerClip">'+
+'<path d="M 48,42 C 48,14 112,14 112,42 C 130,58 138,100 135,150 C 133,185 130,215 118,235 C 108,250 88,256 80,256 C 72,256 52,250 42,235 C 30,215 27,185 25,150 C 22,100 30,58 48,42 Z"/>'+
+'</clipPath>'+
+'</defs>'+
+// === 容器内部（裁剪在轮廓内）===
+'<g clip-path="url(#containerClip)">'+
+// 玻璃背景
+'<rect x="0" y="0" width="'+CW+'" height="'+CH+'" fill="url(#glassGrad)"/>'+
+// 水（从底部向上填充）
+'<rect x="0" y="'+waterY+'" width="'+CW+'" height="'+(liquidBottom-waterY)+'" fill="url(#waterGrad)" style="transition:y .8s cubic-bezier(0.4,0,0.2,1);"/>'+
+// 水面波纹
+'<path d="M 0,'+(waterY+2)+' Q 20,'+(waterY-4)+' 40,'+(waterY+1)+' T 80,'+(waterY-1)+' T 120,'+(waterY+2)+' T 160,'+(waterY+1)+' L 160,'+(waterY+8)+' L 0,'+(waterY+8)+' Z" fill="rgba(255,255,255,0.5)" style="transition:d .8s;"/>'+
+'<path d="M 0,'+(waterY+3)+' Q 25,'+(waterY-1)+' 50,'+(waterY+2)+' T 100,'+(waterY+1)+' T 160,'+(waterY+2)+' L 160,'+(waterY+8)+' L 0,'+(waterY+8)+' Z" fill="rgba(255,255,255,0.25)" style="transition:d .8s;"/>'+
+// 水中气泡
+'<circle cx="38" cy="'+(waterY+15)+'" r="3" fill="rgba(255,255,255,0.6)"><animate attributeName="cy" from="'+(liquidBottom)+'" to="'+(waterY+5)+'" dur="3s" repeatCount="indefinite"/></circle>'+
+'<circle cx="95" cy="'+(waterY+25)+'" r="2.5" fill="rgba(255,255,255,0.5)"><animate attributeName="cy" from="'+(liquidBottom)+'" to="'+(waterY+5)+'" dur="4s" begin="0.5s" repeatCount="indefinite"/></circle>'+
+'<circle cx="60" cy="'+(waterY+40)+'" r="3.5" fill="rgba(255,255,255,0.55)"><animate attributeName="cy" from="'+(liquidBottom)+'" to="'+(waterY+5)+'" dur="3.5s" begin="1s" repeatCount="indefinite"/></circle>'+
+'<circle cx="110" cy="'+(waterY+55)+'" r="2" fill="rgba(255,255,255,0.45)"><animate attributeName="cy" from="'+(liquidBottom)+'" to="'+(waterY+5)+'" dur="4.5s" begin="1.5s" repeatCount="indefinite"/></circle>'+
+'<circle cx="45" cy="'+(waterY+70)+'" r="2.5" fill="rgba(255,255,255,0.5)"><animate attributeName="cy" from="'+(liquidBottom)+'" to="'+(waterY+5)+'" dur="3.8s" begin="0.8s" repeatCount="indefinite"/></circle>'+
 // 液体内部柔光
-'<div style="position:absolute;inset:0;background:linear-gradient(90deg,rgba(255,255,255,0.18) 0%,transparent 30%,transparent 70%,rgba(0,0,0,0.06) 100%);"></div>'+
-'</div>'+
-// 娃娃面部 - 闭眼月牙（左）- 在液体上方层
-'<div style="position:absolute;top:48px;left:28px;width:18px;height:9px;border-bottom:1.5px solid rgba(90,110,130,0.4);border-radius:0 0 18px 18px;pointer-events:none;z-index:4;"></div>'+
+'<rect x="0" y="0" width="'+CW+'" height="'+CH+'" fill="url(#highlightGrad)" opacity="0.15"/>'+
+// 娃娃面部特征（在水面上方的玻璃层）
+// 闭眼月牙（左）
+'<path d="M 52,95 Q 62,88 72,95" stroke="rgba(90,110,130,0.4)" stroke-width="1.5" fill="none" stroke-linecap="round"/>'+
 // 闭眼月牙（右）
-'<div style="position:absolute;top:48px;right:28px;width:18px;height:9px;border-bottom:1.5px solid rgba(90,110,130,0.4);border-radius:0 0 18px 18px;pointer-events:none;z-index:4;"></div>'+
+'<path d="M 88,95 Q 98,88 108,95" stroke="rgba(90,110,130,0.4)" stroke-width="1.5" fill="none" stroke-linecap="round"/>'+
 // 腮红（左）
-'<div style="position:absolute;top:64px;left:18px;width:20px;height:13px;background:radial-gradient(ellipse,rgba(255,180,190,0.25) 0%,transparent 70%);border-radius:50%;pointer-events:none;z-index:4;"></div>'+
+'<ellipse cx="50" cy="115" rx="10" ry="6" fill="rgba(255,180,190,0.2)"/>'+
 // 腮红（右）
-'<div style="position:absolute;top:64px;right:18px;width:20px;height:13px;background:radial-gradient(ellipse,rgba(255,180,190,0.25) 0%,transparent 70%);border-radius:50%;pointer-events:none;z-index:4;"></div>'+
+'<ellipse cx="110" cy="115" rx="10" ry="6" fill="rgba(255,180,190,0.2)"/>'+
 // 微笑小嘴
-'<div style="position:absolute;top:76px;left:50%;transform:translateX(-50%);width:16px;height:8px;border-bottom:1.3px solid rgba(90,110,130,0.35);border-radius:0 0 16px 16px;pointer-events:none;z-index:4;"></div>'+
-// 头部玻璃高光 - 左侧（扁平柔和）
-'<div style="position:absolute;top:14px;left:10px;width:20px;height:70px;background:linear-gradient(180deg,rgba(255,255,255,0.6) 0%,rgba(255,255,255,0.3) 60%,transparent 100%);border-radius:10px;pointer-events:none;z-index:5;"></div>'+
-// 头部玻璃高光 - 右侧细线
-'<div style="position:absolute;top:18px;right:12px;width:5px;height:40px;background:linear-gradient(180deg,rgba(255,255,255,0.4),transparent);border-radius:2.5px;pointer-events:none;z-index:5;"></div>'+
-// 头部顶部弧形高光
-'<div style="position:absolute;top:5px;left:28%;right:28%;height:12px;background:linear-gradient(180deg,rgba(255,255,255,0.5),transparent);border-radius:50%;pointer-events:none;z-index:5;"></div>'+
-// "+" 按钮（在头部正面中间偏下）
-'<div style="position:absolute;top:100px;left:50%;transform:translateX(-50%);width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#fff,#f0f2f5);border:0.5px solid rgba(255,255,255,0.85);box-shadow:0 2px 8px rgba(0,0,0,0.1),inset 0 1px 0 rgba(255,255,255,0.6);display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:300;color:#5A7A4E;cursor:pointer;z-index:6;pointer-events:auto;transition:transform .15s;" onclick="quickW()" onmousedown="this.style.transform=\'translateX(-50%) scale(0.92)\'" onmouseup="this.style.transform=\'translateX(-50%) scale(1)\'">+</div>'+
-'</div>'+
-// --- 小底座（头部底部的托盘）---
-'<div style="position:absolute;bottom:20px;left:50%;transform:translateX(-50%);width:110px;height:14px;background:linear-gradient(180deg,rgba(230,225,220,0.4) 0%,rgba(210,205,200,0.25) 100%);border-radius:50%;border:0.5px solid rgba(200,195,190,0.2);z-index:0;"></div>'+
+'<path d="M 72,128 Q 80,135 88,128" stroke="rgba(90,110,130,0.35)" stroke-width="1.3" fill="none" stroke-linecap="round"/>'+
+// 玻璃高光 - 左侧
+'<rect x="28" y="50" width="16" height="90" fill="url(#highlightGrad)" rx="8"/>'+
+// 玻璃高光 - 右侧细线
+'<rect x="120" y="55" width="4" height="50" fill="rgba(255,255,255,0.35)" rx="2"/>'+
+// 玻璃高光 - 顶部
+'<ellipse cx="80" cy="40" rx="35" ry="8" fill="rgba(255,255,255,0.3)"/>'+
+'</g>'+
+// === 容器外轮廓线（玻璃边框）===
+'<path d="M 48,42 C 48,14 112,14 112,42 C 130,58 138,100 135,150 C 133,185 130,215 118,235 C 108,250 88,256 80,256 C 72,256 52,250 42,235 C 30,215 27,185 25,150 C 22,100 30,58 48,42 Z" fill="none" stroke="rgba(255,255,255,0.7)" stroke-width="1"/>'+
+// 底部阴影线
+'<ellipse cx="80" cy="258" rx="50" ry="4" fill="rgba(0,0,0,0.06)"/>'+
+'</svg>'+
+// "+" 按钮（HTML叠加在SVG上）
+'<div style="position:absolute;top:145px;left:50%;transform:translateX(-50%);width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#fff,#f0f2f5);border:0.5px solid rgba(255,255,255,0.85);box-shadow:0 2px 8px rgba(0,0,0,0.1),inset 0 1px 0 rgba(255,255,255,0.6);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:300;color:#5A7A4E;cursor:pointer;z-index:6;pointer-events:auto;transition:transform .15s;" onclick="quickW()" onmousedown="this.style.transform=\'translateX(-50%) scale(0.92)\'" onmouseup="this.style.transform=\'translateX(-50%) scale(1)\'">+</div>'+
 '</div>'+
 // 刻度线（标尺 - 右侧，对齐头部）
 '<div style="display:flex;flex-direction:column;justify-content:space-between;height:150px;padding-top:2px;font-size:10px;color:rgba(150,145,140,0.7);font-weight:500;flex-shrink:0;">'+
