@@ -1908,15 +1908,14 @@ document.getElementById('pg-water').innerHTML=
 
 // "+" 按钮（HTML叠加在SVG身体中央偏下）
 '<div style="position:absolute;top:188px;left:50%;transform:translateX(-50%);width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,#fff,#f0f2f5);border:0.5px solid rgba(255,255,255,0.85);box-shadow:0 3px 10px rgba(0,0,0,0.12),0 0 0 4px rgba(122,158,110,0.08),inset 0 1px 0 rgba(255,255,255,0.6);display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:300;color:#5A7A4E;cursor:pointer;z-index:6;pointer-events:auto;transition:transform .15s;" onclick="quickW()" onmousedown="this.style.transform=\'translateX(-50%) scale(0.92)\'" onmouseup="this.style.transform=\'translateX(-50%) scale(1)\'">+</div>'+
-'</div>'+
 
-// === 右侧刻度尺 ===
-'<div style="display:flex;flex-direction:column;justify-content:space-between;height:145px;margin-top:130px;font-size:10px;color:rgba(150,145,140,0.7);font-weight:500;flex-shrink:0;position:relative;margin-left:-4px;">'+
-'<div style="display:flex;align-items:center;gap:3px;"><span style="width:10px;height:1.5px;background:rgba(91,143,185,0.6);"></span><span style="color:#5B8FB9;font-weight:600;">2,000ml</span></div>'+
-'<div style="display:flex;align-items:center;gap:3px;"><span style="width:6px;height:1px;background:rgba(150,145,140,0.35);"></span><span style="opacity:0.7;">1,500</span></div>'+
-'<div style="display:flex;align-items:center;gap:3px;"><span style="width:8px;height:1px;background:rgba(150,145,140,0.5);"></span><span>1,000</span></div>'+
-'<div style="display:flex;align-items:center;gap:3px;"><span style="width:10px;height:1.5px;background:rgba(91,143,185,0.6);"></span><span style="color:#5B8FB9;font-weight:600;">500ml</span></div>'+
-'<div style="display:flex;align-items:center;gap:3px;"><span style="width:8px;height:1px;background:rgba(150,145,140,0.5);"></span><span>0</span></div>'+
+// === 右侧刻度尺（在flex行内部，紧贴SVG右侧）===
+'<div style="display:flex;flex-direction:column;justify-content:space-between;height:145px;margin-top:130px;font-size:12px;color:#8A8580;font-weight:600;flex-shrink:0;position:relative;z-index:3;margin-left:-4px;padding-left:2px;">'+
+'<div style="display:flex;align-items:center;gap:4px;"><span style="width:14px;height:2px;background:#5B8FB9;border-radius:1px;"></span><span style="color:#5B8FB9;font-weight:700;white-space:nowrap;">2,000ml</span></div>'+
+'<div style="display:flex;align-items:center;gap:4px;"><span style="width:8px;height:1px;background:#B0AAA5;"></span><span style="color:#A5A09A;white-space:nowrap;">1,500</span></div>'+
+'<div style="display:flex;align-items:center;gap:4px;"><span style="width:10px;height:1.5px;background:#8A8580;border-radius:1px;"></span><span style="color:#8A8580;white-space:nowrap;">1,000</span></div>'+
+'<div style="display:flex;align-items:center;gap:4px;"><span style="width:14px;height:2px;background:#5B8FB9;border-radius:1px;"></span><span style="color:#5B8FB9;font-weight:700;white-space:nowrap;">500ml</span></div>'+
+'<div style="display:flex;align-items:center;gap:4px;"><span style="width:10px;height:1.5px;background:#8A8580;border-radius:1px;"></span><span style="color:#8A8580;white-space:nowrap;">0</span></div>'+
 '</div>'+
 '</div>'+
 
