@@ -2169,7 +2169,7 @@ profile:{nick:D.nick,height:D.h,targetCalories:D.tk,targetProtein:D.tp,targetFat
 mealRecords:D.recs||[],weightRecords:D.wt||[],waterRecords:D.water||{},
 stickers:D.stickers||[],achievements:D.achs||[],aiRecords:D.aiRecs||[],
 };
-var content,Blob,filename;
+var content,filename;
 if(fmt==='json'){
 content=JSON.stringify(data,null,2);
 filename='eatabit_data_'+fd(new Date())+'.json';
@@ -2208,7 +2208,7 @@ return '<div style="padding:12px 16px;border-bottom:0.5px solid var(--border);">
 r.items.map(function(it){return '<span style="font-size:11px;padding:3px 8px;border-radius:8px;background:rgba(122,158,110,0.1);">'+it.emoji+' '+it.name+' '+it.weight+'g</span>';}).join('')+
 '</div></div>';
 }).join('')
-))+
+)+
 '</div>'+
 // 开始AI识别按钮
 '<button onclick="startAIRecognition()" style="width:100%;padding:14px;border-radius:14px;background:linear-gradient(135deg,#7A9E6E,#5A7A4E);color:#fff;border:none;font-size:16px;font-weight:600;cursor:pointer;box-shadow:0 4px 16px rgba(122,158,110,0.3);">'+
@@ -2272,7 +2272,7 @@ var ratio=it.w/baseW;
 it.kcal=Math.round(f.k*ratio);it.p=Math.round(f.p*ratio*10)/10;it.f=Math.round(f.f*ratio*10)/10;it.c=Math.round(f.c*ratio*10)/10;
 // 更新该行
 var rows=document.getElementById('aiItems').children;
-if(rows[idx]){var sub=rows[idx].querySelector('.flex-1')||rows[idx].children[1];if(sub)sub.querySelector('div:last-child').innerHTML=it.kcal+'kcal · P'+it.p+'g · F'+it.f+'g · C'+it.c+'g';}
+if(rows[idx]){var sub=rows[idx].children[1];if(sub){var dvs=sub.querySelectorAll('div');if(dvs[dvs.length-1])dvs[dvs.length-1].innerHTML=it.kcal+'kcal · P'+it.p+'g · F'+it.f+'g · C'+it.c+'g';}}
 // 重算总计
 var tK=0,tP=0,tF=0,tC=0;
 pick.forEach(function(i){tK+=i.kcal;tP+=i.p;tF+=i.f;tC+=i.c;});
@@ -2591,12 +2591,6 @@ document.getElementById('pg-share').innerHTML=
 '<button onclick="exportData()" class="btn btn-p" style="display:block;width:calc(100% - 32px);margin:0 16px;">导出数据 (JSON)</button>'+
 '<button onclick="toast(\'已复制日报到剪贴板\')" class="btn" style="display:block;width:calc(100% - 32px);margin:8px 16px;background:var(--accent);color:#fff;">复制日报</button>';
 }
-function exportData(){
-var obj={records:D.recs,weight:D.wt,water:D.water,stickers:D.stickers,exportDate:fd(new Date())};
-var blob=new Blob([JSON.stringify(obj,null,2)],{type:'application/json'});
-var url=URL.createObjectURL(blob);var a=document.createElement('a');a.href=url;a.download='eatabit_'+fd(new Date())+'.json';document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);toast('数据已导出');
-}
-
 // ===== SEARCH =====
 function renderSearch(){
 document.getElementById('pg-search').innerHTML=
