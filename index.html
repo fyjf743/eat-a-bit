@@ -1803,135 +1803,147 @@ waterLog.push({t:String(h).padStart(2,'0')+':'+String(m).padStart(2,'0'),ml:perC
 
 var tlWHtml='';
 if(waterLog.length===0){
-tlWHtml='<div style="text-align:center;padding:20px;color:var(--text-faint);font-size:13px;">今天还没喝水记录</div>';
+tlWHtml='<div style="text-align:center;padding:20px;color:var(--text-faint);font-size:13px;">'+(D.lang==='en'?'No water records today':'今天还没喝水记录')+'</div>';
 }else{
 waterLog.forEach(function(w,i){
 tlWHtml+='<div style="display:flex;align-items:center;gap:10px;padding:6px 0;">'+
 '<div style="width:32px;height:32px;border-radius:50%;background:rgba(91,143,185,0.12);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;">💧</div>'+
-'<div style="flex:1;"><div style="font-size:13px;font-weight:600;">'+w.t+'</div><div style="font-size:11px;color:var(--text-sub);">喝了 '+w.ml+'ml</div></div>'+
+'<div style="flex:1;"><div style="font-size:13px;font-weight:600;">'+w.t+'</div><div style="font-size:11px;color:var(--text-sub);">'+(D.lang==='en'?'Drank ':'喝了 ')+w.ml+'ml</div></div>'+
 '<div style="font-size:14px;font-weight:700;color:#5B8FB9;">'+w.ml+'ml</div></div>';
 });
 }
 
-// 水量计算：头部作为容器，0-100% 映射到容器内部高度
-var headLiquidH=pct; // 0-100
-// SVG 容器尺寸
-var CW=160,CH=260; // 容器宽高
-var liquidBottom=250; // 液体底部Y坐标
-var liquidTopOffset=20; // 液体顶部距容器顶部偏移
-var liquidH=liquidBottom-liquidTopOffset; // 液体最大高度
-var waterY=liquidBottom-(pct/100)*liquidH; // 当前水面Y坐标
+// ===== 玻璃人形容器 v7 =====
+// SVG 尺寸：160 x 300
+var CW=160,CH=300;
+// 容器内液体区域（身体部分）
+var bodyTop=130;     // 身体顶部Y（颈部下方）
+var bodyBottom=275;   // 身体底部Y
+var bodyMaxH=bodyBottom-bodyTop; // 身体最大高度
+var waterH=(pct/100)*bodyMaxH;   // 当前水高度
+var waterY=bodyBottom-waterH;     // 当前水面Y坐标
 
 document.getElementById('pg-water').innerHTML=
-// 容器卡片 - 浅米白色干净背景
-'<div style="margin:12px 16px;background:linear-gradient(180deg,#FAF8F5 0%,#F5F2EE 100%);border:0.5px solid rgba(200,195,190,0.3);border-radius:20px;padding:24px 20px;min-height:380px;position:relative;overflow:hidden;display:flex;flex-direction:column;align-items:center;">'+
+// === 容器卡片 - 浅米白色干净背景 ===
+'<div style="margin:12px 16px;background:linear-gradient(180deg,#FAF8F5 0%,#F5F2EE 100%);border:0.5px solid rgba(200,195,190,0.3);border-radius:20px;padding:24px 20px;min-height:420px;position:relative;overflow:hidden;display:flex;flex-direction:column;align-items:center;">'+
 // 顶部目标水量
-'<div style="position:relative;z-index:2;text-align:center;margin-bottom:8px;"><div style="font-size:11px;color:rgba(150,145,140,0.8);font-weight:500;letter-spacing:1px;">目标水量</div><div style="font-size:20px;font-weight:700;color:#5A5A5A;margin-top:2px;">2,000<span style="font-size:13px;font-weight:500;color:rgba(150,145,140,0.7);">ml</span></div></div>'+
-// === 玻璃女孩娃娃头容器 v5 - 单一SVG整体 ===
-'<div style="position:relative;z-index:2;display:flex;align-items:flex-start;gap:6px;width:100%;max-width:100%;flex-wrap:nowrap;justify-content:center;">'+
-// SVG 容器 - 单一连续路径
+'<div style="position:relative;z-index:2;text-align:center;margin-bottom:4px;"><div style="font-size:11px;color:rgba(150,145,140,0.8);font-weight:500;letter-spacing:1px;">'+(D.lang==='en'?'Daily Goal':'目标水量')+'</div><div style="font-size:20px;font-weight:700;color:#5A5A5A;margin-top:2px;">2,000<span style="font-size:13px;font-weight:500;color:rgba(150,145,140,0.7);">ml</span></div></div>'+
+
+// === 容器+刻度尺 横向排列 ===
+'<div style="position:relative;z-index:2;display:flex;align-items:flex-start;gap:8px;width:100%;max-width:100%;flex-wrap:nowrap;justify-content:center;">'+
+
+// --- SVG 人形容器 ---
 '<svg width="'+CW+'" height="'+CH+'" viewBox="0 0 '+CW+' '+CH+'" style="flex-shrink:0;overflow:visible;">'+
-// 定义渐变和裁剪路径
 '<defs>'+
 // 玻璃材质渐变
-'<linearGradient id="glassGrad" x1="0%" y1="0%" x2="100%" y2="100%">'+
-'<stop offset="0%" stop-color="rgba(255,255,255,0.5)"/>'+
-'<stop offset="35%" stop-color="rgba(248,250,255,0.25)"/>'+
-'<stop offset="65%" stop-color="rgba(228,238,250,0.15)"/>'+
-'<stop offset="100%" stop-color="rgba(208,224,242,0.3)"/>'+
+'<linearGradient id="glassGrad7" x1="0%" y1="0%" x2="100%" y2="100%">'+
+'<stop offset="0%" stop-color="rgba(255,255,255,0.55)"/>'+
+'<stop offset="35%" stop-color="rgba(248,250,255,0.3)"/>'+
+'<stop offset="65%" stop-color="rgba(228,238,250,0.18)"/>'+
+'<stop offset="100%" stop-color="rgba(208,224,242,0.35)"/>'+
 '</linearGradient>'+
-// 水的渐变
-'<linearGradient id="waterGrad" x1="0%" y1="0%" x2="0%" y2="100%">'+
-'<stop offset="0%" stop-color="rgba(120,185,225,0.6)"/>'+
-'<stop offset="40%" stop-color="rgba(85,155,210,0.7)"/>'+
+// 水的渐变 - 清澈淡蓝
+'<linearGradient id="waterGrad7" x1="0%" y1="0%" x2="0%" y2="100%">'+
+'<stop offset="0%" stop-color="rgba(130,195,235,0.65)"/>'+
+'<stop offset="40%" stop-color="rgba(90,165,220,0.7)"/>'+
 '<stop offset="100%" stop-color="rgba(55,125,190,0.8)"/>'+
 '</linearGradient>'+
-// 左侧高光渐变
-'<linearGradient id="highlightGrad" x1="0%" y1="0%" x2="0%" y2="100%">'+
-'<stop offset="0%" stop-color="rgba(255,255,255,0.65)"/>'+
-'<stop offset="60%" stop-color="rgba(255,255,255,0.25)"/>'+
+// 高光渐变
+'<linearGradient id="hlGrad7" x1="0%" y1="0%" x2="0%" y2="100%">'+
+'<stop offset="0%" stop-color="rgba(255,255,255,0.7)"/>'+
+'<stop offset="60%" stop-color="rgba(255,255,255,0.3)"/>'+
 '<stop offset="100%" stop-color="rgba(255,255,255,0)"/>'+
 '</linearGradient>'+
-// 容器轮廓路径（单一连续形状 - 女孩娃娃头+头发）
-'<clipPath id="containerClip">'+
-'<path d="M 48,42 C 48,14 112,14 112,42 C 130,58 138,100 135,150 C 133,185 130,215 118,235 C 108,250 88,256 80,256 C 72,256 52,250 42,235 C 30,215 27,185 25,150 C 22,100 30,58 48,42 Z"/>'+
+// 完整人形轮廓裁剪路径
+'<clipPath id="fullClip7">'+
+'<path d="M 35,50 C 35,15 125,15 125,50 C 125,75 115,90 100,95 L 92,120 C 130,128 145,155 145,190 C 145,225 135,255 115,270 C 100,277 60,277 45,270 C 25,255 15,225 15,190 C 15,155 30,128 68,120 L 60,95 C 45,90 35,75 35,50 Z"/>'+
+'</clipPath>'+
+// 仅身体部分裁剪路径（水只在此区域）
+'<clipPath id="bodyClip7">'+
+'<path d="M 15,125 C 15,155 30,128 68,120 L 92,120 C 130,128 145,155 145,190 C 145,225 135,255 115,270 C 100,277 60,277 45,270 C 25,255 15,225 15,190 Z"/>'+
 '</clipPath>'+
 '</defs>'+
-// === 容器内部（裁剪在轮廓内）===
-'<g clip-path="url(#containerClip)">'+
+
+// === 容器内部（裁剪在完整轮廓内）===
+'<g clip-path="url(#fullClip7)">'+
 // 玻璃背景
-'<rect x="0" y="0" width="'+CW+'" height="'+CH+'" fill="url(#glassGrad)"/>'+
-// 水（从底部向上填充）
-'<rect x="0" y="'+waterY+'" width="'+CW+'" height="'+(liquidBottom-waterY)+'" fill="url(#waterGrad)" style="transition:y .8s cubic-bezier(0.4,0,0.2,1);"/>'+
+'<rect x="0" y="0" width="'+CW+'" height="'+CH+'" fill="url(#glassGrad7)"/>'+
+
+// === 水体（仅在身体部分）===
+'<g clip-path="url(#bodyClip7)">'+
+'<rect x="0" y="'+waterY+'" width="'+CW+'" height="'+(bodyBottom-waterY)+'" fill="url(#waterGrad7)" style="transition:y .8s cubic-bezier(0.4,0,0.2,1);"/>'+
 // 水面波纹
-'<path d="M 0,'+(waterY+2)+' Q 20,'+(waterY-4)+' 40,'+(waterY+1)+' T 80,'+(waterY-1)+' T 120,'+(waterY+2)+' T 160,'+(waterY+1)+' L 160,'+(waterY+8)+' L 0,'+(waterY+8)+' Z" fill="rgba(255,255,255,0.5)" style="transition:d .8s;"/>'+
-'<path d="M 0,'+(waterY+3)+' Q 25,'+(waterY-1)+' 50,'+(waterY+2)+' T 100,'+(waterY+1)+' T 160,'+(waterY+2)+' L 160,'+(waterY+8)+' L 0,'+(waterY+8)+' Z" fill="rgba(255,255,255,0.25)" style="transition:d .8s;"/>'+
-// 水中气泡
-'<circle cx="38" cy="'+(waterY+15)+'" r="3" fill="rgba(255,255,255,0.6)"><animate attributeName="cy" from="'+(liquidBottom)+'" to="'+(waterY+5)+'" dur="3s" repeatCount="indefinite"/></circle>'+
-'<circle cx="95" cy="'+(waterY+25)+'" r="2.5" fill="rgba(255,255,255,0.5)"><animate attributeName="cy" from="'+(liquidBottom)+'" to="'+(waterY+5)+'" dur="4s" begin="0.5s" repeatCount="indefinite"/></circle>'+
-'<circle cx="60" cy="'+(waterY+40)+'" r="3.5" fill="rgba(255,255,255,0.55)"><animate attributeName="cy" from="'+(liquidBottom)+'" to="'+(waterY+5)+'" dur="3.5s" begin="1s" repeatCount="indefinite"/></circle>'+
-'<circle cx="110" cy="'+(waterY+55)+'" r="2" fill="rgba(255,255,255,0.45)"><animate attributeName="cy" from="'+(liquidBottom)+'" to="'+(waterY+5)+'" dur="4.5s" begin="1.5s" repeatCount="indefinite"/></circle>'+
-'<circle cx="45" cy="'+(waterY+70)+'" r="2.5" fill="rgba(255,255,255,0.5)"><animate attributeName="cy" from="'+(liquidBottom)+'" to="'+(waterY+5)+'" dur="3.8s" begin="0.8s" repeatCount="indefinite"/></circle>'+
-// 液体内部柔光
-'<rect x="0" y="0" width="'+CW+'" height="'+CH+'" fill="url(#highlightGrad)" opacity="0.15"/>'+
-// 娃娃面部特征（在水面上方的玻璃层）
-// 闭眼月牙（左）
-'<path d="M 52,95 Q 62,88 72,95" stroke="rgba(90,110,130,0.4)" stroke-width="1.5" fill="none" stroke-linecap="round"/>'+
-// 闭眼月牙（右）
-'<path d="M 88,95 Q 98,88 108,95" stroke="rgba(90,110,130,0.4)" stroke-width="1.5" fill="none" stroke-linecap="round"/>'+
-// 腮红（左）
-'<ellipse cx="50" cy="115" rx="10" ry="6" fill="rgba(255,180,190,0.2)"/>'+
-// 腮红（右）
-'<ellipse cx="110" cy="115" rx="10" ry="6" fill="rgba(255,180,190,0.2)"/>'+
-// 微笑小嘴
-'<path d="M 72,128 Q 80,135 88,128" stroke="rgba(90,110,130,0.35)" stroke-width="1.3" fill="none" stroke-linecap="round"/>'+
-// 玻璃高光 - 左侧
-'<rect x="28" y="50" width="16" height="90" fill="url(#highlightGrad)" rx="8"/>'+
-// 玻璃高光 - 右侧细线
-'<rect x="120" y="55" width="4" height="50" fill="rgba(255,255,255,0.35)" rx="2"/>'+
-// 玻璃高光 - 顶部
-'<ellipse cx="80" cy="40" rx="35" ry="8" fill="rgba(255,255,255,0.3)"/>'+
+'<path d="M 0,'+(waterY+2)+' Q 20,'+(waterY-4)+' 40,'+(waterY+1)+' T 80,'+(waterY-1)+' T 120,'+(waterY+2)+' T 160,'+(waterY+1)+' L 160,'+(waterY+8)+' L 0,'+(waterY+8)+' Z" fill="rgba(255,255,255,0.55)" style="transition:d .8s;"/>'+
+'<path d="M 0,'+(waterY+3)+' Q 25,'+(waterY-1)+' 50,'+(waterY+2)+' T 100,'+(waterY+1)+' T 160,'+(waterY+2)+' L 160,'+(waterY+8)+' L 0,'+(waterY+8)+' Z" fill="rgba(255,255,255,0.28)" style="transition:d .8s;"/>'+
+// 水中气泡（6个，错开时间）
+'<circle cx="40" cy="'+(waterY+20)+'" r="3" fill="rgba(255,255,255,0.6)"><animate attributeName="cy" from="'+bodyBottom+'" to="'+(waterY+8)+'" dur="3s" repeatCount="indefinite"/></circle>'+
+'<circle cx="100" cy="'+(waterY+30)+'" r="2.5" fill="rgba(255,255,255,0.5)"><animate attributeName="cy" from="'+bodyBottom+'" to="'+(waterY+8)+'" dur="4s" begin="0.5s" repeatCount="indefinite"/></circle>'+
+'<circle cx="65" cy="'+(waterY+45)+'" r="3.5" fill="rgba(255,255,255,0.55)"><animate attributeName="cy" from="'+bodyBottom+'" to="'+(waterY+8)+'" dur="3.5s" begin="1s" repeatCount="indefinite"/></circle>'+
+'<circle cx="115" cy="'+(waterY+60)+'" r="2" fill="rgba(255,255,255,0.45)"><animate attributeName="cy" from="'+bodyBottom+'" to="'+(waterY+8)+'" dur="4.5s" begin="1.5s" repeatCount="indefinite"/></circle>'+
+'<circle cx="50" cy="'+(waterY+80)+'" r="2.5" fill="rgba(255,255,255,0.5)"><animate attributeName="cy" from="'+bodyBottom+'" to="'+(waterY+8)+'" dur="3.8s" begin="0.8s" repeatCount="indefinite"/></circle>'+
+'<circle cx="90" cy="'+(waterY+100)+'" r="3" fill="rgba(255,255,255,0.55)"><animate attributeName="cy" from="'+bodyBottom+'" to="'+(waterY+8)+'" dur="4.2s" begin="2s" repeatCount="indefinite"/></circle>'+
+// 水体内部柔光
+'<rect x="0" y="0" width="'+CW+'" height="'+CH+'" fill="url(#hlGrad7)" opacity="0.12"/>'+
 '</g>'+
+
+// 玻璃高光 - 左侧（竖条）
+'<rect x="28" y="20" width="14" height="100" fill="url(#hlGrad7)" rx="7"/>'+
+// 玻璃高光 - 身体左侧
+'<rect x="22" y="135" width="10" height="120" fill="url(#hlGrad7)" rx="5"/>'+
+// 玻璃高光 - 右侧细线
+'<rect x="120" y="25" width="4" height="55" fill="rgba(255,255,255,0.4)" rx="2"/>'+
+// 玻璃高光 - 头顶
+'<ellipse cx="80" cy="22" rx="32" ry="7" fill="rgba(255,255,255,0.35)"/>'+
+// 面部留白 - 无五官，纯净玻璃质感
+'</g>'+
+
 // === 容器外轮廓线（玻璃边框）===
-'<path d="M 48,42 C 48,14 112,14 112,42 C 130,58 138,100 135,150 C 133,185 130,215 118,235 C 108,250 88,256 80,256 C 72,256 52,250 42,235 C 30,215 27,185 25,150 C 22,100 30,58 48,42 Z" fill="none" stroke="rgba(255,255,255,0.7)" stroke-width="1"/>'+
-// 底部阴影线
-'<ellipse cx="80" cy="258" rx="50" ry="4" fill="rgba(0,0,0,0.06)"/>'+
+'<path d="M 35,50 C 35,15 125,15 125,50 C 125,75 115,90 100,95 L 92,120 C 130,128 145,155 145,190 C 145,225 135,255 115,270 C 100,277 60,277 45,270 C 25,255 15,225 15,190 C 15,155 30,128 68,120 L 60,95 C 45,90 35,75 35,50 Z" fill="none" stroke="rgba(255,255,255,0.7)" stroke-width="1"/>'+
+// 颈部细线
+'<line x1="62" y1="100" x2="60" y2="120" stroke="rgba(255,255,255,0.3)" stroke-width="0.8"/>'+
+'<line x1="98" y1="100" x2="92" y2="120" stroke="rgba(255,255,255,0.3)" stroke-width="0.8"/>'+
+// 底部投影
+'<ellipse cx="80" cy="280" rx="55" ry="5" fill="rgba(0,0,0,0.05)"/>'+
 '</svg>'+
-// "+" 按钮（HTML叠加在SVG上）
-'<div style="position:absolute;top:145px;left:50%;transform:translateX(-50%);width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#fff,#f0f2f5);border:0.5px solid rgba(255,255,255,0.85);box-shadow:0 2px 8px rgba(0,0,0,0.1),inset 0 1px 0 rgba(255,255,255,0.6);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:300;color:#5A7A4E;cursor:pointer;z-index:6;pointer-events:auto;transition:transform .15s;" onclick="quickW()" onmousedown="this.style.transform=\'translateX(-50%) scale(0.92)\'" onmouseup="this.style.transform=\'translateX(-50%) scale(1)\'">+</div>'+
+
+// "+" 按钮（HTML叠加在SVG身体中央偏下）
+'<div style="position:absolute;top:188px;left:50%;transform:translateX(-50%);width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,#fff,#f0f2f5);border:0.5px solid rgba(255,255,255,0.85);box-shadow:0 3px 10px rgba(0,0,0,0.12),0 0 0 4px rgba(122,158,110,0.08),inset 0 1px 0 rgba(255,255,255,0.6);display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:300;color:#5A7A4E;cursor:pointer;z-index:6;pointer-events:auto;transition:transform .15s;" onclick="quickW()" onmousedown="this.style.transform=\'translateX(-50%) scale(0.92)\'" onmouseup="this.style.transform=\'translateX(-50%) scale(1)\'">+</div>'+
 '</div>'+
-// 刻度线（标尺 - 右侧，对齐头部）
-'<div style="display:flex;flex-direction:column;justify-content:space-between;height:150px;padding-top:2px;font-size:10px;color:rgba(150,145,140,0.7);font-weight:500;flex-shrink:0;">'+
-'<div style="display:flex;align-items:center;gap:3px;"><span style="width:8px;height:1px;background:rgba(150,145,140,0.5);"></span><span>2000</span></div>'+
-'<div style="display:flex;align-items:center;gap:3px;"><span style="width:6px;height:1px;background:rgba(150,145,140,0.35);"></span><span style="opacity:0.7;">1500</span></div>'+
-'<div style="display:flex;align-items:center;gap:3px;"><span style="width:8px;height:1px;background:rgba(150,145,140,0.5);"></span><span>1000</span></div>'+
-'<div style="display:flex;align-items:center;gap:3px;"><span style="width:6px;height:1px;background:rgba(150,145,140,0.35);"></span><span style="opacity:0.7;">500</span></div>'+
+
+// === 右侧刻度尺 ===
+'<div style="display:flex;flex-direction:column;justify-content:space-between;height:150px;padding-top:135px;font-size:10px;color:rgba(150,145,140,0.7);font-weight:500;flex-shrink:0;position:relative;margin-left:-4px;">'+
+'<div style="display:flex;align-items:center;gap:3px;"><span style="width:10px;height:1.5px;background:rgba(91,143,185,0.6);"></span><span style="color:#5B8FB9;font-weight:600;">2,000ml</span></div>'+
+'<div style="display:flex;align-items:center;gap:3px;"><span style="width:6px;height:1px;background:rgba(150,145,140,0.35);"></span><span style="opacity:0.7;">1,500</span></div>'+
+'<div style="display:flex;align-items:center;gap:3px;"><span style="width:8px;height:1px;background:rgba(150,145,140,0.5);"></span><span>1,000</span></div>'+
+'<div style="display:flex;align-items:center;gap:3px;"><span style="width:10px;height:1.5px;background:rgba(91,143,185,0.6);"></span><span style="color:#5B8FB9;font-weight:600;">500ml</span></div>'+
 '<div style="display:flex;align-items:center;gap:3px;"><span style="width:8px;height:1px;background:rgba(150,145,140,0.5);"></span><span>0</span></div>'+
 '</div>'+
 '</div>'+
+
 // 当前水量显示
-'<div style="position:relative;z-index:2;text-align:center;margin-top:14px;"><div style="font-size:28px;font-weight:700;color:#4A90D9;line-height:1;">'+ml+'<span style="font-size:15px;font-weight:500;color:var(--text-sub);">ml</span></div><div style="font-size:11px;color:var(--text-sub);margin-top:4px;">已喝 '+Math.round(pct)+'% · 还差 '+(2000-ml)+'ml</div></div>'+
-// 添加按钮
-'<button onclick="quickW()" style="position:relative;z-index:2;margin-top:16px;width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#7A9E6E,#5A7A4E);color:#fff;border:none;font-size:28px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;box-shadow:0 4px 16px rgba(122,158,110,0.35),inset 0 1px 0 rgba(255,255,255,0.25),inset 0 -1px 0 rgba(0,0,0,0.1);transition:all .2s;">+</button>'+
+'<div style="position:relative;z-index:2;text-align:center;margin-top:12px;"><div style="font-size:28px;font-weight:700;color:#4A90D9;line-height:1;">'+ml+'<span style="font-size:15px;font-weight:500;color:var(--text-sub);">ml</span></div><div style="font-size:11px;color:var(--text-sub);margin-top:4px;">'+(D.lang==='en'?'Drunk '+Math.round(pct)+'% · Remaining '+(2000-ml)+'ml':'已喝 '+Math.round(pct)+'% · 还差 '+(2000-ml)+'ml')+'</div></div>'+
 '</div>'+
-// Quick amount selector - 胶囊式 Liquid Glass 设计
+
+// === 水量选择器 - 胶囊式 Liquid Glass ===
 '<div style="margin:12px 16px;padding:16px 20px;background:var(--glass-bg);backdrop-filter:var(--glass-blur);-webkit-backdrop-filter:var(--glass-blur);border:0.5px solid var(--glass-border);border-radius:18px;box-shadow:var(--glass-shadow);position:relative;overflow:hidden;">'+
 '<div style="position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,0.12) 0%,rgba(255,255,255,0.02) 45%,rgba(255,255,255,0.06) 55%,rgba(255,255,255,0.1) 100%);pointer-events:none;mix-blend-mode:overlay;opacity:0.6;"></div>'+
-'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;position:relative;z-index:1;"><div><div style="font-size:15px;font-weight:600;">请选择喝水量</div><div style="font-size:12px;color:var(--text-sub);margin-top:1px;">约半瓶矿泉水</div></div><div style="font-size:13px;color:var(--text-sub);">现在 <span id="wT">'+String(new Date().getHours()).padStart(2,'0')+':'+String(new Date().getMinutes()).padStart(2,'0')+'</span> ▼</div></div>'+
+'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;position:relative;z-index:1;"><div><div style="font-size:15px;font-weight:600;">'+(D.lang==='en'?'Select amount':'请选择喝水量')+'</div><div style="font-size:12px;color:var(--text-sub);margin-top:1px;">'+(D.lang==='en'?'~half bottle water':'约半瓶矿泉水')+'</div></div><div style="font-size:13px;color:var(--text-sub);">'+(D.lang==='en'?'Now':'现在')+' <span id="wT">'+String(new Date().getHours()).padStart(2,'0')+':'+String(new Date().getMinutes()).padStart(2,'0')+'</span> ▼</div></div>'+
 '<div id="wA" style="display:flex;gap:6px;justify-content:space-between;align-items:center;position:relative;z-index:1;">'+
 [{v:50},{v:100},{v:250,a:true},{v:500},{v:800}].map(function(x){return '<div onclick="selW(this)" data-ml="'+x.v+'" class="wa'+(x.a?' active':'')+'" style="padding:8px 14px;border-radius:18px;font-size:15px;font-weight:600;cursor:pointer;border:none;color:'+(x.a?'#fff':'var(--text-sub)')+';background:'+(x.a?'var(--brand)':'transparent')+';transition:all .25s cubic-bezier(0.25,0.46,0.45,0.94);min-width:48px;text-align:center;'+(x.a?'box-shadow:0 2px 8px rgba(122,158,110,0.3),inset 0 1px 0 rgba(255,255,255,0.25);':'')+'">'+x.v+'</div>';}).join('')+'</div></div>'+
+
 // Water timeline
 '<div style="margin:0 16px 12px;padding:16px;background:var(--glass-bg);backdrop-filter:var(--glass-blur);-webkit-backdrop-filter:var(--glass-blur);border:0.5px solid var(--glass-border);border-radius:18px;box-shadow:var(--glass-shadow);position:relative;overflow:hidden;">'+
 '<div style="position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,0.12) 0%,rgba(255,255,255,0.02) 45%,rgba(255,255,255,0.06) 55%,rgba(255,255,255,0.1) 100%);pointer-events:none;mix-blend-mode:overlay;opacity:0.6;"></div>'+
-'<div style="font-size:14px;font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:6px;"><span>📋</span><span>今日喝水记录</span></div>'+
+'<div style="font-size:14px;font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:6px;"><span>📋</span><span>'+(D.lang==='en'?'Water Timeline':'今日喝水记录')+'</span></div>'+
 tlWHtml+
 '</div>'+
+
 // Stats grid
 '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin:0 16px 12px;">'+
-'<div class="card" style="text-align:center;"><div style="font-size:20px;font-weight:700;color:#5B8FB9;">'+ml+'ml</div><div style="font-size:11px;color:var(--text-sub);margin-top:2px;">今日喝水量</div></div>'+
-'<div class="card" style="text-align:center;"><div style="font-size:20px;font-weight:700;">'+Math.round(ml/250*10)/10+'杯</div><div style="font-size:11px;color:var(--text-sub);margin-top:2px;">今日喝水(杯)</div></div>'+
-'<div class="card" style="text-align:center;"><div style="font-size:20px;font-weight:700;">'+Math.round(all/days)+'ml</div><div style="font-size:11px;color:var(--text-sub);margin-top:2px;">平均水量/天</div></div>'+
-'<div class="card" style="text-align:center;"><div style="font-size:20px;font-weight:700;">'+all+'ml</div><div style="font-size:11px;color:var(--text-sub);margin-top:2px;">累计喝水</div></div></div>';
+'<div class="card" style="text-align:center;"><div style="font-size:20px;font-weight:700;color:#5B8FB9;">'+ml+'ml</div><div style="font-size:11px;color:var(--text-sub);margin-top:2px;">'+(D.lang==='en'?'Today':'今日喝水量')+'</div></div>'+
+'<div class="card" style="text-align:center;"><div style="font-size:20px;font-weight:700;">'+Math.round(ml/250*10)/10+'</div><div style="font-size:11px;color:var(--text-sub);margin-top:2px;">'+(D.lang==='en'?'Cups':'今日(杯)')+'</div></div>'+
+'<div class="card" style="text-align:center;"><div style="font-size:20px;font-weight:700;">'+Math.round(all/days)+'ml</div><div style="font-size:11px;color:var(--text-sub);margin-top:2px;">'+(D.lang==='en'?'Avg/day':'平均/天')+'</div></div>'+
+'<div class="card" style="text-align:center;"><div style="font-size:20px;font-weight:700;">'+all+'ml</div><div style="font-size:11px;color:var(--text-sub);margin-top:2px;">'+(D.lang==='en'?'Total':'累计')+'</div></div></div>';
 }
 function selW(el){el.parentElement.querySelectorAll('.wa').forEach(function(x){x.classList.remove('active');x.style.background='transparent';x.style.color='var(--text-sub)';x.style.boxShadow='none';});el.classList.add('active');el.style.background='var(--brand)';el.style.color='#fff';el.style.boxShadow='0 2px 8px rgba(122,158,110,0.3),inset 0 1px 0 rgba(255,255,255,0.25)';}
 function quickW(){
